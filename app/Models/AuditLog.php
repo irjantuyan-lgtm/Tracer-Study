@@ -18,7 +18,8 @@ class AuditLog extends Model
         'aksi',
         'tabel_referensi',
         'id_referensi',
-        'waktu_aktivitas'
+        'waktu_aktivitas',
+        'ip_address'
     ];
 
     public $timestamps = false; // Matikan timestamps jika tabel ini hanya memakai 'waktu_aktivitas'
@@ -38,6 +39,7 @@ class AuditLog extends Model
                 'tabel_referensi' => $tabel_referensi,
                 'id_referensi' => $id_referensi,
                 'waktu_aktivitas' => now(),
+                'ip_address' => request()->ip(),
             ]);
         }
         return null;

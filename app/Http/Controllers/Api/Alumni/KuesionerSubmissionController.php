@@ -132,6 +132,7 @@ class KuesionerSubmissionController extends Controller
             JawabanDetail::insert($dataJawaban);
 
             DB::commit();
+            \App\Models\AuditLog::catat('Mengirim kuesioner tracer study', 'respons', $respons->id);
             return response()->json(['status' => 'success', 'message' => 'Terima kasih, kuesioner berhasil dikirim!'], 200);
 
         } catch (Exception $e) {

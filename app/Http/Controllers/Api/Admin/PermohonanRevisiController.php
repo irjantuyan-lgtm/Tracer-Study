@@ -14,8 +14,16 @@ class PermohonanRevisiController extends Controller
     // Fungsi untuk Admin melihat daftar permohonan revisi yang masuk
     public function index()
     {
-        // Mengambil data permohonan dari database
-        $data = PermohonanRevisi::all();
+        $query = PermohonanRevisi::query()->with('respons.alumni');
+        $user = Auth::user();
+
+        if ($user && $user->role && $user->role->nama_role === 'Admin Prodi') {
+            $query->whereHas('respons.alumni', function ($q) use ($user) {
+                $q->where('prodi_id', $user->prodi_id);
+            });
+        }
+
+        $data = $query->get();
         
         return response()->json([
             'status' => 'success',
@@ -35,7 +43,16 @@ class PermohonanRevisiController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-       $revisi = PermohonanRevisi::find($id);
+       $query = PermohonanRevisi::query()->with('respons.alumni');
+       $user = Auth::user();
+
+       if ($user && $user->role && $user->role->nama_role === 'Admin Prodi') {
+           $query->whereHas('respons.alumni', function ($q) use ($user) {
+               $q->where('prodi_id', $user->prodi_id);
+           });
+       }
+
+       $revisi = $query->find($id);
         if (!$revisi) return response()->json(['message' => 'Permohonan tidak ditemukan'], 404);
 
         // --- TAMBAHKAN PENGECEKAN INI ---
@@ -60,6 +77,8 @@ class PermohonanRevisiController extends Controller
                 $respons->update(['status_pengisian' => 'Draft']);
             }
         }
+
+        \App\Models\AuditLog::catat("Meninjau permohonan revisi menjadi {$request->status_permohonan}", 'permohonan_revisi', $revisi->id);
 
         return response()->json([
             'status' => 'success', 

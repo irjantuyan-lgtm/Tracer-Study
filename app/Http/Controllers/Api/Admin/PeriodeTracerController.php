@@ -7,12 +7,20 @@ use App\Models\PeriodeTracer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\AuditLog;
+use Illuminate\Support\Facades\Auth;
 
 class PeriodeTracerController extends Controller
 {
     public function index()
     {
-        $periode = PeriodeTracer::with(['programStudi', 'instrumenSnapshot'])->get();
+        $query = PeriodeTracer::with(['programStudi', 'instrumenSnapshot']);
+        $user = Auth::user();
+
+        if ($user && $user->role && $user->role->nama_role === 'Admin Prodi') {
+            $query->where('prodi_id', $user->prodi_id);
+        }
+
+        $periode = $query->get();
         return response()->json(['status' => 'success', 'data' => $periode], 200);
     }
 
@@ -30,6 +38,11 @@ class PeriodeTracerController extends Controller
 
         if ($validator->fails()) return response()->json(['errors' => $validator->errors()], 422);
 
+        $user = Auth::user();
+        if ($user && $user->role && $user->role->nama_role === 'Admin Prodi' && (int) $request->prodi_id !== (int) $user->prodi_id) {
+            return response()->json(['message' => 'Anda hanya boleh mengelola periode pada program studi Anda sendiri'], 403);
+        }
+
         // Jika periode baru diset 'Aktif', matikan periode lama menjadi 'Ditutup' (bukan Selesai)
         if ($request->status === 'Aktif') {
             PeriodeTracer::where('status', 'Aktif')->update(['status' => 'Ditutup']);
@@ -41,7 +54,14 @@ class PeriodeTracerController extends Controller
 
     public function show($id)
     {
-        $periode = PeriodeTracer::with('instrumenSnapshot')->find($id);
+        $query = PeriodeTracer::with('instrumenSnapshot');
+        $user = Auth::user();
+
+        if ($user && $user->role && $user->role->nama_role === 'Admin Prodi') {
+            $query->where('prodi_id', $user->prodi_id);
+        }
+
+        $periode = $query->find($id);
         if (!$periode) return response()->json(['message' => 'Periode tidak ditemukan'], 404);
         return response()->json(['status' => 'success', 'data' => $periode], 200);
     }
@@ -54,7 +74,14 @@ class PeriodeTracerController extends Controller
 
         if ($validator->fails()) return response()->json(['errors' => $validator->errors()], 422);
 
-        $periode = PeriodeTracer::find($periode_id);
+        $query = PeriodeTracer::query();
+        $user = Auth::user();
+
+        if ($user && $user->role && $user->role->nama_role === 'Admin Prodi') {
+            $query->where('prodi_id', $user->prodi_id);
+        }
+
+        $periode = $query->find($periode_id);
         if (!$periode) return response()->json(['message' => 'Periode tidak ditemukan'], 404);
 
         if ($request->status === 'Aktif') {
@@ -76,7 +103,14 @@ class PeriodeTracerController extends Controller
     // --- METHOD BARU: Untuk mengubah data periode (selain status) ---
     public function update(Request $request, $id)
     {
-        $periode = PeriodeTracer::find($id);
+        $query = PeriodeTracer::query();
+        $user = Auth::user();
+
+        if ($user && $user->role && $user->role->nama_role === 'Admin Prodi') {
+            $query->where('prodi_id', $user->prodi_id);
+        }
+
+        $periode = $query->find($id);
         if (!$periode) return response()->json(['message' => 'Periode tidak ditemukan'], 404);
 
         $validator = Validator::make($request->all(), [
@@ -105,7 +139,14 @@ class PeriodeTracerController extends Controller
     // --- METHOD BARU: Untuk menghapus data periode ---
     public function destroy($id)
     {
-        $periode = PeriodeTracer::find($id);
+        $query = PeriodeTracer::query();
+        $user = Auth::user();
+
+        if ($user && $user->role && $user->role->nama_role === 'Admin Prodi') {
+            $query->where('prodi_id', $user->prodi_id);
+        }
+
+        $periode = $query->find($id);
         if (!$periode) return response()->json(['message' => 'Periode tidak ditemukan'], 404);
 
         $namaPeriode = $periode->nama_periode; // Simpan nama sebelum dihapus untuk log

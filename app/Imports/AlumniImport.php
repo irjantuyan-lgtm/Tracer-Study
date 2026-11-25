@@ -8,10 +8,24 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB; // Tambahan import DB
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Exception; // Tambahan import Exception
+use Exception;
+use App\Models\Role;
 
 class AlumniImport implements ToModel, WithHeadingRow
 {
+    protected int $imported = 0;
+    protected int $skipped = 0;
+
+    public function getImportedCount(): int
+    {
+        return $this->imported;
+    }
+
+    public function getSkippedCount(): int
+    {
+        return $this->skipped;
+    }
+
     /**
     * @param array $row
     *
@@ -24,7 +38,8 @@ class AlumniImport implements ToModel, WithHeadingRow
         $alumniExists = Alumni::where('nim', $row['nim'])->exists();
 
         if ($userExists || $alumniExists) {
-            return null; 
+            $this->skipped++;
+            return null;
         }
 
         // Memulai Transaksi Database
@@ -32,10 +47,12 @@ class AlumniImport implements ToModel, WithHeadingRow
 
         try {
             // 2. Buat Akun User untuk Login
+            $roleAlumni = Role::where('nama_role', 'Alumni')->firstOrFail();
+
             $user = User::create([
                 'username'  => $row['email'],
                 'password'  => Hash::make($row['nim']),
-                'role_id'   => null,
+                'role_id'   => $roleAlumni->id,
                 'is_active' => true,
             ]);
 
@@ -51,16 +68,16 @@ class AlumniImport implements ToModel, WithHeadingRow
 
             // Jika kedua data berhasil dibuat, simpan permanen
             DB::commit();
-            
-            // Return null karena data alumni sudah disave secara manual menggunakan Alumni::create
+            $this->imported++;
+
             return null;
 
         } catch (Exception $e) {
             // Jika terjadi error pada baris ini, batalkan pembuatan User agar tidak ada data hantu
             DB::rollBack();
             
-            // Melewati baris yang error dan lanjut membaca baris Excel berikutnya
-            return null; 
+            $this->skipped++;
+            return null;
         }
     }
 }

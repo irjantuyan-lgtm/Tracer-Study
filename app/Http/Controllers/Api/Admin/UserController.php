@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use App\Models\AuditLog;
 
 class UserController extends Controller
 {
@@ -33,6 +34,7 @@ class UserController extends Controller
         $data['password'] = Hash::make($request->password); // Enkripsi password
 
         $user = User::create($data);
+        AuditLog::catat('Menambah user', 'users', $user->id);
         return response()->json(['status' => 'success', 'message' => 'User berhasil dibuat', 'data' => $user], 201);
     }
 
@@ -50,6 +52,7 @@ class UserController extends Controller
 
         $validator = Validator::make($request->all(), [
             'username' => 'unique:users,username,' . $id,
+            'password' => 'nullable|min:6',
             'role_id' => 'exists:roles,id',
             'is_active' => 'boolean'
         ]);
@@ -65,6 +68,7 @@ class UserController extends Controller
         }
 
         $user->update($data);
+        AuditLog::catat('Mengubah user', 'users', $user->id);
         return response()->json(['status' => 'success', 'message' => 'Data User berhasil diupdate', 'data' => $user], 200);
     }
 
@@ -79,6 +83,7 @@ class UserController extends Controller
         }
 
         $user->delete();
+        AuditLog::catat('Menghapus user', 'users', (int) $id);
         return response()->json(['status' => 'success', 'message' => 'User berhasil dihapus'], 200);
     }
 }
