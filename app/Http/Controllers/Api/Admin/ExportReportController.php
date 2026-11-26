@@ -7,20 +7,31 @@ use Illuminate\Http\Request;
 use App\Models\PeriodeTracer;
 use App\Models\Alumni;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Auth;
 
 class ExportReportController extends Controller
 {
     public function cetakPdfProgres()
     {
-        // 1. Ambil periode yang sedang aktif
-        $periodeAktif = PeriodeTracer::where('status', 'Aktif')->first();
+        $user = Auth::user();
+        $isAdminProdi = $user && $user->role && $user->role->nama_role === 'Admin Prodi';
+
+        $periodeQuery = PeriodeTracer::where('status', 'Aktif');
+        $alumniQuery = Alumni::query();
+
+        if ($isAdminProdi) {
+            $periodeQuery->where('prodi_id', $user->prodi_id);
+            $alumniQuery->where('prodi_id', $user->prodi_id);
+        }
+
+        $periodeAktif = $periodeQuery->first();
         if (!$periodeAktif) {
             return response()->json(['message' => 'Tidak ada periode aktif saat ini'], 404);
         }
 
         // 2. Hitung statistik (Pastikan filter hanya yang statusnya "Terkirim")
-        $totalAlumni = Alumni::count();
-        $alumniSudahIsi = Alumni::whereHas('respons', function ($query) use ($periodeAktif) {
+        $totalAlumni = $alumniQuery->count();
+        $alumniSudahIsi = $alumniQuery->whereHas('respons', function ($query) use ($periodeAktif) {
             $query->where('periode_id', $periodeAktif->id)
                   ->where('status_pengisian', 'Terkirim'); // Sinkron dengan Dashboard
         })->count();

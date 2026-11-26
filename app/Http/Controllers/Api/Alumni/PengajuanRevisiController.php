@@ -22,6 +22,8 @@ class PengajuanRevisiController extends Controller
         if ($validator->fails()) return response()->json(['errors' => $validator->errors()], 422);
 
         $alumni = Alumni::where('user_id', Auth::id())->first();
+        if (!$alumni) return response()->json(['status' => 'error', 'message' => 'Profil alumni tidak ditemukan'], 404);
+
         $periode = PeriodeTracer::where('status', 'Aktif')->first();
 
         if (!$periode) return response()->json(['status' => 'error', 'message' => 'Periode sudah ditutup.'], 400);
@@ -47,6 +49,8 @@ class PengajuanRevisiController extends Controller
             'status_permohonan' => 'Menunggu Tinjauan',
             'waktu_pengajuan' => now()
         ]);
+
+        \App\Models\AuditLog::catat('Mengajukan revisi kuesioner', 'permohonan_revisi', $revisi->id);
 
         return response()->json([
             'status' => 'success', 

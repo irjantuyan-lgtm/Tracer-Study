@@ -7,16 +7,25 @@ use Illuminate\Http\Request;
 use App\Models\Alumni;
 use App\Models\PeriodeTracer;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // 1. Hitung Total Seluruh Alumni
-        $totalAlumni = Alumni::count();
+        $user = Auth::user();
+        $isAdminProdi = $user && $user->role && $user->role->nama_role === 'Admin Prodi';
 
-        // 2. Cek Periode Tracer yang sedang Aktif
-        $periodeAktif = PeriodeTracer::where('status', 'Aktif')->first();
+        $alumniQuery = Alumni::query();
+        $periodeQuery = PeriodeTracer::where('status', 'Aktif');
+
+        if ($isAdminProdi) {
+            $alumniQuery->where('prodi_id', $user->prodi_id);
+            $periodeQuery->where('prodi_id', $user->prodi_id);
+        }
+
+        $totalAlumni = $alumniQuery->count();
+        $periodeAktif = $periodeQuery->first();
 
         $sudahMengisi = 0;
         $belumMengisi = $totalAlumni;

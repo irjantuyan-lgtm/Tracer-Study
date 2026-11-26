@@ -23,6 +23,7 @@ class RiwayatPekerjaanController extends Controller
     public function store(Request $request)
     {
         $alumni = Alumni::where('user_id', Auth::id())->first();
+        if (!$alumni) return response()->json(['status' => 'error', 'message' => 'Profil alumni tidak ditemukan'], 404);
 
         // Cek batasan maksimal 2 data
         $jumlahData = RiwayatPekerjaan::where('alumni_id', $alumni->id)->count();

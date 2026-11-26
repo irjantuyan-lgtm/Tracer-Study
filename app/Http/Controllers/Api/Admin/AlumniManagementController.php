@@ -13,13 +13,21 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\AlumniImport;
 use Illuminate\Support\Facades\DB;
 use Exception;
+use App\Models\Role;
+use Illuminate\Support\Facades\Auth;
 
 class AlumniManagementController extends Controller
 {
     public function index()
     {
-        $alumni = Alumni::with('programStudi')->get();
-        return response()->json(['status' => 'success', 'data' => $alumni], 200);
+        $query = Alumni::with('programStudi');
+        $user = Auth::user();
+
+        if ($user && $user->role && $user->role->nama_role === 'Admin Prodi') {
+            $query->where('prodi_id', $user->prodi_id);
+        }
+
+        return response()->json(['status' => 'success', 'data' => $query->get()], 200);
     }
 
   public function store(Request $request)
@@ -35,14 +43,21 @@ class AlumniManagementController extends Controller
 
         if ($validator->fails()) return response()->json(['errors' => $validator->errors()], 422);
 
+        $authUser = Auth::user();
+        if ($authUser && $authUser->role && $authUser->role->nama_role === 'Admin Prodi' && (int) $request->prodi_id !== (int) $authUser->prodi_id) {
+            return response()->json(['message' => 'Anda hanya boleh menambah alumni pada program studi Anda sendiri'], 403);
+        }
+
         // Memulai Transaksi Database
         DB::beginTransaction();
 
         try {
+            $roleAlumni = Role::where('nama_role', 'Alumni')->firstOrFail();
+
             $user = User::create([
                 'username' => $request->email,
                 'password' => Hash::make($request->nim),
-                'role_id' => 4,
+                'role_id' => $roleAlumni->id,
                 'is_active' => true,
             ]);
 
@@ -59,6 +74,10 @@ class AlumniManagementController extends Controller
 
             // Jika semua berhasil, simpan permanen (Commit)
             DB::commit();
+
+            if (class_exists('App\Models\AuditLog')) {
+                \App\Models\AuditLog::catat('Menambah alumni', 'alumni', $alumni->id);
+            }
 
             return response()->json([
                 'status' => 'success', 
@@ -81,6 +100,11 @@ class AlumniManagementController extends Controller
         // 1. Cari data alumni terlebih dahulu
         $alumni = Alumni::find($id);
         if (!$alumni) return response()->json(['message' => 'Data tidak ditemukan'], 404);
+
+        $user = Auth::user();
+        if ($user && $user->role && $user->role->nama_role === 'Admin Prodi' && $alumni->prodi_id != $user->prodi_id) {
+            return response()->json(['message' => 'Anda tidak berhak mengubah alumni dari program studi lain'], 403);
+        }
 
         // 2. Validasi input (perhatikan tambahan id agar tidak bentrok dengan data sendiri)
         $validator = Validator::make($request->all(), [
@@ -113,6 +137,8 @@ class AlumniManagementController extends Controller
         }
 
         $alumni->update($data);
+
+        \App\Models\AuditLog::catat('Mengubah data alumni', 'alumni', $alumni->id);
         
         return response()->json([
             'status' => 'success', 
@@ -125,6 +151,11 @@ class AlumniManagementController extends Controller
     {
         $alumni = Alumni::find($id);
         if (!$alumni) return response()->json(['message' => 'Data tidak ditemukan'], 404);
+
+        $user = Auth::user();
+        if ($user && $user->role && $user->role->nama_role === 'Admin Prodi' && $alumni->prodi_id != $user->prodi_id) {
+            return response()->json(['message' => 'Anda tidak berhak menghapus alumni dari program studi lain'], 403);
+        }
 
         // Simpan ID user sebelum alumni dihapus
         $userId = $alumni->user_id;
@@ -139,6 +170,8 @@ class AlumniManagementController extends Controller
                 $user->delete();
             }
         }
+
+        \App\Models\AuditLog::catat('Menghapus alumni', 'alumni', (int) $id);
 
         return response()->json([
             'status' => 'success', 
@@ -176,12 +209,14 @@ class AlumniManagementController extends Controller
         }
 
         try {
-            // Mengeksekusi proses import menggunakan class AlumniImport
-            Excel::import(new AlumniImport, $request->file('file_excel'));
+            $import = new AlumniImport;
+            Excel::import($import, $request->file('file_excel'));
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Data Alumni berhasil diimpor dan Akun Login otomatis dibuat!'
+                'message' => 'Proses import alumni selesai.',
+                'imported' => $import->getImportedCount(),
+                'skipped' => $import->getSkippedCount()
             ], 200);
 
         } catch (\Exception $e) {
@@ -196,8 +231,14 @@ class AlumniManagementController extends Controller
     // METHOD BARU: Untuk melihat detail satu orang alumni
     public function show($id)
     {
-        // Mengambil data alumni beserta relasi prodi dan user (akun)
-        $alumni = Alumni::with(['programStudi', 'user'])->find($id);
+        $user = Auth::user();
+        $query = Alumni::with(['programStudi', 'user']);
+
+        if ($user && $user->role && $user->role->nama_role === 'Admin Prodi') {
+            $query->where('prodi_id', $user->prodi_id);
+        }
+
+        $alumni = $query->find($id);
         
         if (!$alumni) {
             return response()->json(['message' => 'Data Alumni tidak ditemukan'], 404);
