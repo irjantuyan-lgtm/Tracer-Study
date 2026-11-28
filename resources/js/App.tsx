@@ -1,124 +1,198 @@
-import React, { useState } from 'react';
-import { useTracerData } from './hooks';
-import { Navbar, Sidebar, Footer } from './components/layout';
-import { HomeView, DetailView, SettingsView } from './views';
-import { Modal, Button } from './components/common';
+import { useState } from "react";
+import { Page, Role, ModalData } from "./types";
+import { nav } from "./data";
+import { Icon, Modal } from "./components/common";
+import { Sidebar, Header } from "./components/layout";
+import {
+  LoginView,
+  DashboardView,
+  AlumniView,
+  QuestionnairesView,
+  QuestionnaireDetailView,
+  ReportView,
+  DirectoryView,
+  UserManagementView,
+  ActivityLogsView,
+  SettingsView,
+} from "./views";
 
-export const App: React.FC = () => {
-    const {
-        user,
-        stats,
-        kuesionerList,
-        filteredKuesioner,
-        riwayatList,
-        periodeTracer,
-        activityLogs,
-        currentView,
-        selectedKuesioner,
-        searchTerm,
-        setSearchTerm,
-        navigateTo,
-        handleAnswerQuestion,
-        isNotificationOpen,
-        setIsNotificationOpen,
-    } = useTracerData();
+export default function App() {
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [role, setRole] = useState<Role>("super");
+  const [page, setPage] = useState<Page>("dashboard");
+  const [detail, setDetail] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [modal, setModal] = useState<null | ModalData>(null);
+  const [toast, setToast] = useState("");
 
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const notify = (message: string) => {
+    setToast(message);
+    window.setTimeout(() => setToast(""), 2800);
+  };
 
+  const changePage = (next: Page) => {
+    setPage(next);
+    setDetail(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  if (!loggedIn) {
     return (
-        <div className="flex min-h-screen flex-col bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 font-sans antialiased">
-            {/* Top Navigation Bar */}
-            <Navbar
-                user={user}
-                onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
-                onNotificationClick={() => setIsNotificationOpen(true)}
-                searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
-            />
-
-            <div className="flex flex-1">
-                {/* Sidebar Navigation */}
-                <Sidebar
-                    currentView={currentView}
-                    onViewChange={(view) => navigateTo(view)}
-                    isOpen={isSidebarOpen}
-                    onClose={() => setIsSidebarOpen(false)}
-                />
-
-                {/* Main Content Area */}
-                <main className="flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
-                    {currentView === 'home' && (
-                        <HomeView
-                            user={user}
-                            stats={stats}
-                            kuesionerList={filteredKuesioner}
-                            activityLogs={activityLogs}
-                            onSelectKuesioner={(item) => navigateTo('detail', item.id)}
-                            onGoToSettings={() => navigateTo('settings')}
-                        />
-                    )}
-
-                    {currentView === 'detail' && (
-                        <DetailView
-                            kuesioner={selectedKuesioner}
-                            riwayatList={riwayatList}
-                            onBackToHome={() => navigateTo('home')}
-                            onAnswerQuestion={handleAnswerQuestion}
-                        />
-                    )}
-
-                    {currentView === 'settings' && (
-                        <SettingsView
-                            user={user}
-                            periodeTracer={periodeTracer}
-                            onBackToHome={() => navigateTo('home')}
-                        />
-                    )}
-                </main>
-            </div>
-
-            {/* Global Footer */}
-            <Footer />
-
-            {/* Modal Notifikasi */}
-            <Modal
-                isOpen={isNotificationOpen}
-                onClose={() => setIsNotificationOpen(false)}
-                title="Pemberitahuan & Notifikasi"
-                footer={
-                    <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => setIsNotificationOpen(false)}
-                    >
-                        Tandai Sudah Dibaca
-                    </Button>
-                }
-            >
-                <div className="space-y-3">
-                    <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 text-xs">
-                        <p className="font-semibold text-blue-900 dark:text-blue-300">
-                            Periode Pengisian Tracer Study 2026 Telah Dibuka
-                        </p>
-                        <p className="mt-1 text-gray-600 dark:text-gray-300">
-                            Silakan melengkapi kuesioner Anda untuk evaluasi kurikulum dan akreditasi program studi.
-                        </p>
-                        <span className="mt-2 block text-[10px] text-gray-400">Hari ini, 09:00 WIB</span>
-                    </div>
-
-                    <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-700 text-xs">
-                        <p className="font-semibold text-gray-800 dark:text-gray-200">
-                            Verifikasi Data Alumni Berhasil
-                        </p>
-                        <p className="mt-1 text-gray-500 dark:text-gray-400">
-                            Data kelulusan dan ijazah Anda telah terverifikasi oleh pangkalan data universitas.
-                        </p>
-                        <span className="mt-2 block text-[10px] text-gray-400">Kemarin, 14:30 WIB</span>
-                    </div>
-                </div>
-            </Modal>
-        </div>
+      <LoginView
+        onLogin={(selectedRole) => {
+          setRole(selectedRole);
+          setLoggedIn(true);
+        }}
+      />
     );
-};
+  }
 
-export default App;
+  const title = detail
+    ? "Detail Kuesioner"
+    : nav.find((n) => n.id === page)?.label || "Dashboard";
+
+  return (
+    <div className="app-shell">
+      <Sidebar
+        page={page}
+        onChange={changePage}
+        mobileOpen={mobileOpen}
+        close={() => setMobileOpen(false)}
+        role={role}
+        logout={() => {
+          setLoggedIn(false);
+          setPage("dashboard");
+          setDetail(false);
+          setModal(null);
+          setMobileOpen(false);
+        }}
+      />
+      <div className="app-main">
+        <Header title={title} menu={() => setMobileOpen(true)} role={role} />
+        <main className="content">
+          {page === "dashboard" && (
+            <DashboardView navigate={changePage} role={role} />
+          )}
+
+          {page === "alumni" && (
+            <AlumniView
+              notify={notify}
+              role={role}
+              openModal={() =>
+                setModal({ title: "Tambah Alumni", type: "alumni" })
+              }
+              openImport={() =>
+                setModal({ title: "Import Data Alumni", type: "import" })
+              }
+              openEdit={(name) =>
+                setModal({ title: `Edit Alumni — ${name}`, type: "alumni" })
+              }
+            />
+          )}
+
+          {page === "questionnaires" && !detail && (
+            <QuestionnairesView
+              openDetail={() => setDetail(true)}
+              openModal={() =>
+                setModal({ title: "Buat Kuesioner", type: "questionnaire" })
+              }
+              openImport={() =>
+                setModal({ title: "Import Kuesioner Excel", type: "import" })
+              }
+              openEdit={(name) =>
+                setModal({
+                  title: `Edit ${name}`,
+                  type: "questionnaire",
+                })
+              }
+              notify={notify}
+              role={role}
+            />
+          )}
+
+          {page === "questionnaires" && detail && (
+            <QuestionnaireDetailView
+              back={() => setDetail(false)}
+              openModal={() =>
+                setModal({ title: "Tambah Pertanyaan", type: "question" })
+              }
+              notify={notify}
+              openImport={() =>
+                setModal({ title: "Import Pertanyaan Excel", type: "import" })
+              }
+              openEdit={(name) =>
+                setModal({
+                  title: `Edit Pertanyaan — ${name}`,
+                  type: "question",
+                })
+              }
+              role={role}
+            />
+          )}
+
+          {page === "report" && <ReportView notify={notify} role={role} />}
+
+          {(page === "lecturers" ||
+            page === "employees" ||
+            page === "programs") && (
+            <DirectoryView
+              type={page}
+              role={role}
+              notify={notify}
+              openModal={() =>
+                setModal({
+                  title:
+                    page === "lecturers"
+                      ? "Tambah Dosen"
+                      : page === "employees"
+                        ? "Tambah Pegawai"
+                        : "Tambah Program Studi",
+                  type: "directory",
+                })
+              }
+              openEdit={(name) =>
+                setModal({
+                  title: `Edit Data — ${name}`,
+                  type: "directory",
+                })
+              }
+            />
+          )}
+
+          {page === "users" && role !== "program" && (
+            <UserManagementView
+              role={role}
+              notify={notify}
+              openModal={() =>
+                setModal({ title: "Buat Akun Baru", type: "user" })
+              }
+              openEdit={(name) =>
+                setModal({ title: `Edit Akun — ${name}`, type: "user" })
+              }
+            />
+          )}
+
+          {page === "logs" && <ActivityLogsView notify={notify} />}
+
+          {page === "settings" && <SettingsView />}
+        </main>
+      </div>
+
+      {modal && (
+        <Modal
+          {...modal}
+          close={() => setModal(null)}
+          notify={notify}
+          role={role}
+        />
+      )}
+
+      <div className={`toast ${toast ? "show" : ""}`}>
+        <span>
+          <Icon name="check" size={16} />
+        </span>
+        {toast}
+      </div>
+    </div>
+  );
+}

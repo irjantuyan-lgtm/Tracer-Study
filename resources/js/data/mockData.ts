@@ -1,150 +1,222 @@
-import { User, TracerStat, KuesionerItem, RiwayatPekerjaan, PeriodeTracer, ActivityLog } from '../types';
+import { Role, RoleInfo, NavItem, AlumniItem, QuestionnaireItem } from "../types";
 
-export const mockCurrentUser: User = {
-    id: 1,
-    name: 'Desta Erlangga Ramadhani',
-    email: 'desta@tracerstudy.ac.id',
-    role: 'alumni',
-    nim: '20220801045',
-    prodi: 'Teknik Informatika',
-    tahunLulus: 2024,
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+export const campusPhoto =
+  "https://images.unsplash.com/photo-1599537504477-ec5a7bb32321?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=85&w=1400";
+
+export const roles: Record<Role, RoleInfo> = {
+  super: {
+    label: "Super Admin",
+    short: "SA",
+    scope: "Universitas HKBP Nommensen",
+    greeting: "Super Admin",
+  },
+  faculty: {
+    label: "Admin Fakultas",
+    short: "AF",
+    scope: "Fakultas Sains & Teknologi",
+    greeting: "Admin Fakultas",
+  },
+  program: {
+    label: "Admin Prodi",
+    short: "AP",
+    scope: "Program Studi Informatika",
+    greeting: "Admin Prodi",
+  },
 };
 
-export const mockTracerStats: TracerStat[] = [
-    {
-        id: 'total_alumni',
-        label: 'Total Alumni Terdaftar',
-        value: '1,420',
-        change: '+12% thn ini',
-        isPositive: true,
-        description: 'Alumni dari seluruh program studi',
-    },
-    {
-        id: 'response_rate',
-        label: 'Tingkat Respon Tracer',
-        value: '84.6%',
-        change: '+6.2% target',
-        isPositive: true,
-        description: 'Telah mengisi kuesioner periode aktif',
-    },
-    {
-        id: 'working_rate',
-        label: 'Bekerja / Berwirausaha',
-        value: '78.2%',
-        change: 'Masa tunggu rata-rata 3.2 bln',
-        isPositive: true,
-        description: 'Mendapat pekerjaan < 6 bulan setelah lulus',
-    },
-    {
-        id: 'relevance_rate',
-        label: 'Kesesuaian Bidang Studi',
-        value: '82.5%',
-        change: 'Tinggi',
-        isPositive: true,
-        description: 'Pekerjaan relevan dengan kurikulum',
-    },
+export const nav: NavItem[] = [
+  { id: "dashboard", label: "Dashboard", icon: "home" },
+  { id: "alumni", label: "Data Alumni", icon: "users" },
+  { id: "questionnaires", label: "Kuesioner", icon: "clipboard" },
+  { id: "report", label: "Laporan", icon: "chart" },
+  { id: "lecturers", label: "Data Dosen", icon: "graduation" },
+  { id: "employees", label: "Data Pegawai", icon: "briefcase" },
+  { id: "programs", label: "Data Prodi", icon: "building" },
+  { id: "users", label: "Manajemen User", icon: "shield" },
+  { id: "logs", label: "Log Aktivitas", icon: "history" },
+  { id: "settings", label: "Pengaturan", icon: "settings" },
 ];
 
-export const mockKuesionerList: KuesionerItem[] = [
-    {
-        id: 1,
-        judul: 'Modul A: Status Pekerjaan & Aktivitas Saat Ini',
-        kategori: 'Pekerjaan',
-        deskripsi: 'Pendataan apakah alumni sudah bekerja, melanjutkan studi, wirausaha, atau mencari kerja.',
-        status: 'Selesai',
-        totalPertanyaan: 12,
-        terjawab: 12,
-        tenggatWaktu: '31 Des 2026',
-    },
-    {
-        id: 2,
-        judul: 'Modul B: Keselarasan Kompetensi & Pembelajaran',
-        kategori: 'Kompetensi',
-        deskripsi: 'Evaluasi soft skill, hard skill, dan pengalaman kuliah yang relevan di dunia industri.',
-        status: 'Dalam Proses',
-        totalPertanyaan: 15,
-        terjawab: 9,
-        tenggatWaktu: '31 Des 2026',
-    },
-    {
-        id: 3,
-        judul: 'Modul C: Kepuasan Terhadap Layanan Kampus',
-        kategori: 'Kepuasan',
-        deskripsi: 'Penilaian alumni terhadap fasilitas, bimbingan karir, serta kualitas pengajaran.',
-        status: 'Belum Diisi',
-        totalPertanyaan: 10,
-        terjawab: 0,
-        tenggatWaktu: '31 Des 2026',
-    },
+export const alumni: AlumniItem[] = [
+  {
+    name: "Dimas Cakra Putra",
+    nim: "421190001",
+    program: "Informatika",
+    year: "2021",
+    status: "Aktif",
+    photo:
+      "https://images.unsplash.com/photo-1756973229525-53fbc1303a61?crop=faces&fit=crop&w=80&h=80&q=80",
+  },
+  {
+    name: "Nadia Sari",
+    nim: "421190018",
+    program: "Informatika",
+    year: "2021",
+    status: "Aktif",
+    photo:
+      "https://images.unsplash.com/photo-1756973229712-af48b150e911?crop=faces&fit=crop&w=80&h=80&q=80",
+  },
+  {
+    name: "Rahmat Ardi",
+    nim: "420180044",
+    program: "Sistem Informasi",
+    year: "2020",
+    status: "Aktif",
+    photo: "",
+  },
+  {
+    name: "Kasih Widi",
+    nim: "419170008",
+    program: "Informatika",
+    year: "2019",
+    status: "Tidak Aktif",
+    photo: "",
+  },
+  {
+    name: "Putri Anggi",
+    nim: "418160092",
+    program: "Teknologi Informasi",
+    year: "2018",
+    status: "Aktif",
+    photo: "",
+  },
+  {
+    name: "Fajar Pratama",
+    nim: "422200031",
+    program: "Sistem Informasi",
+    year: "2022",
+    status: "Aktif",
+    photo: "",
+  },
 ];
 
-export const mockRiwayatPekerjaan: RiwayatPekerjaan[] = [
-    {
-        id: 101,
-        namaPerusahaan: 'PT Teknologi Inovasi Mandiri',
-        posisi: 'Full Stack Software Engineer',
-        bidangIndustri: 'Teknologi Informasi & Software House',
-        tahunMulai: 2024,
-        tahunSelesai: null,
-        statusPekerjaan: 'Penuh Waktu',
-        kesesuaianBidang: 'Sangat Sesuai',
-        pendapatan: 'Rp 8.000.000 - Rp 12.000.000',
-    },
-    {
-        id: 102,
-        namaPerusahaan: 'Nusantara Creative Studio',
-        posisi: 'Frontend Developer Intern',
-        bidangIndustri: 'Creative & Digital Agency',
-        tahunMulai: 2023,
-        tahunSelesai: 2024,
-        statusPekerjaan: 'Paruh Waktu',
-        kesesuaianBidang: 'Sesuai',
-        pendapatan: 'Rp 3.500.000 - Rp 5.000.000',
-    },
+export const questionnaires: QuestionnaireItem[] = [
+  {
+    period: "2025–2026",
+    name: "Kuesioner Tracer Study 2025",
+    status: "Aktif",
+    date: "12 Jan 2026",
+  },
+  {
+    period: "2023–2024",
+    name: "Kuesioner Tracer Study 2023",
+    status: "Aktif",
+    date: "10 Jan 2024",
+  },
+  {
+    period: "2022–2023",
+    name: "Kuesioner Tracer Study 2022",
+    status: "Aktif",
+    date: "08 Jan 2023",
+  },
+  {
+    period: "2021–2022",
+    name: "Kuesioner Tracer Study 2021",
+    status: "Selesai",
+    date: "06 Jan 2022",
+  },
 ];
 
-export const mockPeriodeTracer: PeriodeTracer[] = [
-    {
-        id: 1,
-        tahun: 2026,
-        namaPeriode: 'Tracer Study Siklus 2026 (Lulusan 2024-2025)',
-        tanggalMulai: '2026-01-15',
-        tanggalSelesai: '2026-12-31',
-        targetTahunLulus: [2024, 2025],
-        isActive: true,
-    },
-    {
-        id: 2,
-        tahun: 2025,
-        namaPeriode: 'Tracer Study Siklus 2025 (Lulusan 2023-2024)',
-        tanggalMulai: '2025-01-15',
-        tanggalSelesai: '2025-12-31',
-        targetTahunLulus: [2023, 2024],
-        isActive: false,
-    },
+export const questions: [string, string, string][] = [
+  ["Pilihan Ganda", "Apa status pekerjaan Anda saat ini?", "Ya"],
+  ["Pilihan Ganda", "Apakah pekerjaan Anda sesuai dengan bidang studi?", "Ya"],
+  [
+    "Isian Singkat",
+    "Berapa lama Anda menunggu untuk mendapatkan pekerjaan?",
+    "Ya",
+  ],
+  ["Pilihan Ganda", "Berapa pendapatan rata-rata per bulan?", "Ya"],
+  [
+    "Pilihan Ganda",
+    "Apakah Anda melanjutkan studi ke jenjang lebih tinggi?",
+    "Tidak",
+  ],
 ];
 
-export const mockActivityLogs: ActivityLog[] = [
-    {
-        id: 1,
-        user: 'Desta Erlangga',
-        action: 'Menyimpan draft jawaban Modul B Kompetensi',
-        timestamp: '10 menit yang lalu',
-        type: 'kuesioner',
-    },
-    {
-        id: 2,
-        user: 'Admin Tracer',
-        action: 'Memperbarui periode kuesioner tahun 2026',
-        timestamp: '2 jam yang lalu',
-        type: 'export',
-    },
-    {
-        id: 3,
-        user: 'Desta Erlangga',
-        action: 'Memperbarui profil & kontak alumni',
-        timestamp: '1 hari yang lalu',
-        type: 'profile',
-    },
+export const directoryData: Record<"lecturers" | "employees" | "programs", string[][]> = {
+  lecturers: [
+    [
+      "Dr. Oris Krianto Sulaiman, S.T., M.Kom.",
+      "0123078601",
+      "Informatika",
+      "Aktif",
+    ],
+    [
+      "Erwin Panggabean, S.Kom., M.Kom.",
+      "0115088502",
+      "Sistem Informasi",
+      "Aktif",
+    ],
+    [
+      "Rosinta Romauli, S.T., M.T.",
+      "0109048903",
+      "Teknologi Informasi",
+      "Aktif",
+    ],
+    ["Dr. Mula Sigiro, S.Si., M.Si.", "0111127904", "Informatika", "Aktif"],
+  ],
+  employees: [
+    ["Ruth Simanjuntak, S.E.", "PGW-0018", "Administrasi Akademik", "Aktif"],
+    ["Binsar Hutapea", "PGW-0021", "Laboratorium", "Aktif"],
+    ["Tiodor Sitorus, S.E.", "PGW-0034", "Keuangan", "Aktif"],
+    ["Maruli Silalahi", "PGW-0040", "Layanan Mahasiswa", "Aktif"],
+  ],
+  programs: [
+    ["Informatika", "S1-IF", "Dr. Oris Krianto Sulaiman", "Unggul"],
+    ["Sistem Informasi", "S1-SI", "Erwin Panggabean, M.Kom.", "Baik Sekali"],
+    ["Teknologi Informasi", "S1-TI", "Rosinta Romauli, M.T.", "Baik Sekali"],
+    ["Teknik Elektro", "S1-TE", "Dr. Mula Sigiro", "Baik"],
+  ],
+};
+
+export const userRows: string[][] = [
+  ["Maria Sihombing", "maria@uhn.ac.id", "Admin Fakultas", "FAST", "Aktif"],
+  ["Artha Simbolon", "artha@uhn.ac.id", "Admin Prodi", "Informatika", "Aktif"],
+  ["Roy Manurung", "roy@uhn.ac.id", "Admin Dosen", "Sistem Informasi", "Aktif"],
+  ["Nadia Sari", "421190018", "Mahasiswa", "Informatika", "Aktif"],
+];
+
+export const auditLogs: string[][] = [
+  [
+    "18 Feb 2025, 09:42",
+    "Super Admin",
+    "Mengimpor 18 data alumni",
+    "Data Alumni",
+    "Berhasil",
+  ],
+  [
+    "18 Feb 2025, 09:31",
+    "Nadia Sari",
+    "Menyelesaikan kuesioner 2025",
+    "Kuesioner",
+    "Berhasil",
+  ],
+  [
+    "18 Feb 2025, 08:56",
+    "Admin Prodi",
+    "Memperbarui data dosen",
+    "Data Dosen",
+    "Berhasil",
+  ],
+  [
+    "17 Feb 2025, 16:20",
+    "Admin Fakultas",
+    "Mencetak laporan progres",
+    "Laporan",
+    "Berhasil",
+  ],
+  [
+    "17 Feb 2025, 14:02",
+    "Super Admin",
+    "Membuat akun Admin Prodi",
+    "Manajemen User",
+    "Berhasil",
+  ],
+  [
+    "17 Feb 2025, 10:15",
+    "Admin Prodi",
+    "Mengubah status periode",
+    "Kuesioner",
+    "Berhasil",
+  ],
 ];
