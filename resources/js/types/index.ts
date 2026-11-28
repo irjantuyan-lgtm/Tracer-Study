@@ -65,9 +65,26 @@ export interface QuestionnaireItem {
   date: string;
 }
 
+export interface AlumniApiItem {
+  id: number;
+  prodi_id: number;
+  nim: string;
+  nama_lengkap: string;
+  tahun_lulus: number;
+  email_kontak?: string | null;
+  status_alumni?: string | null;
+  foto_profil?: string | null;
+  program_studi?: {
+    id: number;
+    nama_prodi: string;
+  } | null;
+}
+
 export interface ModalData {
   title: string;
   type: string;
+  alumni?: AlumniApiItem;
+  onSuccess?: () => void;
 }
 
 // Tracer Study Alumni Data Types

@@ -1,11 +1,18 @@
-import { FormEvent, ReactNode } from "react";
-import { Role } from "../../types";
+import { FormEvent, ReactNode, useEffect, useState } from "react";
+import { AlumniApiItem, Role } from "../../types";
 import { Icon } from "./Icon";
 import { Button } from "./Button";
+
+interface ProdiOption {
+  id: number;
+  nama_prodi: string;
+}
 
 export interface ModalProps {
   title: string;
   type?: string;
+  alumni?: AlumniApiItem;
+  onSuccess?: () => void;
   close?: () => void;
   notify?: (s: string) => void;
   role?: Role;
@@ -19,6 +26,8 @@ export interface ModalProps {
 export function Modal({
   title,
   type,
+  alumni,
+  onSuccess,
   close,
   notify,
   role = "super",
@@ -28,6 +37,50 @@ export function Modal({
   footer,
 }: ModalProps) {
   const handleClose = onClose || close || (() => {});
+  const [prodiList, setProdiList] = useState<ProdiOption[]>([]);
+  const [namaLengkap, setNamaLengkap] = useState(alumni?.nama_lengkap || "");
+  const [nim, setNim] = useState(alumni?.nim || "");
+  const [email, setEmail] = useState(alumni?.email_kontak || "");
+  const [tahunLulus, setTahunLulus] = useState(
+    alumni?.tahun_lulus ? String(alumni.tahun_lulus) : String(new Date().getFullYear()),
+  );
+  const [prodiId, setProdiId] = useState(
+    alumni?.prodi_id ? String(alumni.prodi_id) : "",
+  );
+  const [fotoProfil, setFotoProfil] = useState<File | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
+
+  useEffect(() => {
+    if (type !== "alumni") return;
+    setNamaLengkap(alumni?.nama_lengkap || "");
+    setNim(alumni?.nim || "");
+    setEmail(alumni?.email_kontak || "");
+    setTahunLulus(
+      alumni?.tahun_lulus ? String(alumni.tahun_lulus) : String(new Date().getFullYear()),
+    );
+    setProdiId(alumni?.prodi_id ? String(alumni.prodi_id) : "");
+    setFotoProfil(null);
+    setFormError("");
+
+    const token = localStorage.getItem("token");
+    fetch("/api/program-studi", {
+      headers: {
+        Accept: "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    })
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.status === "success" && Array.isArray(json.data)) {
+          setProdiList(json.data);
+          if (!alumni?.prodi_id && json.data.length > 0) {
+            setProdiId(String(json.data[0].id));
+          }
+        }
+      })
+      .catch(() => {});
+  }, [type, alumni]);
 
   if (isOpen !== undefined && !isOpen) {
     return null;
@@ -66,10 +119,60 @@ export function Modal({
 
   // Jika modal formulir dari Figma Make
   const isEdit = title.startsWith("Edit");
-  const submit = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
-    handleClose();
-    if (notify) notify(`${title} berhasil disimpan`);
+
+    if (type !== "alumni") {
+      handleClose();
+      if (notify) notify(`${title} berhasil disimpan`);
+      return;
+    }
+
+    setSubmitting(true);
+    setFormError("");
+
+    try {
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("nama_lengkap", namaLengkap);
+      formData.append("nim", nim);
+      formData.append("email", email);
+      formData.append("tahun_lulus", tahunLulus);
+      formData.append("prodi_id", prodiId);
+      if (fotoProfil) {
+        formData.append("foto_profil", fotoProfil);
+      }
+      if (isEdit && alumni) {
+        formData.append("_method", "PUT");
+      }
+
+      const url = isEdit && alumni ? `/api/alumni/${alumni.id}` : "/api/alumni";
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: formData,
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        const firstError = json.errors
+          ? Object.values(json.errors as Record<string, string[]>).flat()[0]
+          : null;
+        setFormError(firstError || json.message || "Gagal menyimpan data alumni");
+        return;
+      }
+
+      onSuccess?.();
+      notify?.(json.message || `${title} berhasil disimpan`);
+      handleClose();
+    } catch {
+      setFormError("Gagal terhubung ke server");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -175,35 +278,77 @@ export function Modal({
           </>
         ) : type === "alumni" ? (
           <>
+            {formError && (
+              <p style={{ color: "#dc2626", fontSize: "0.9rem", marginBottom: "8px" }}>
+                {formError}
+              </p>
+            )}
             <label>
               Nama lengkap
-              <input required placeholder="Contoh: Andi Pratama" autoFocus />
+              <input
+                required
+                value={namaLengkap}
+                onChange={(e) => setNamaLengkap(e.target.value)}
+                placeholder="Contoh: Andi Pratama"
+                autoFocus
+              />
             </label>
             <div className="field-row">
               <label>
                 NIM
-                <input required placeholder="Nomor induk" />
+                <input
+                  required
+                  value={nim}
+                  onChange={(e) => setNim(e.target.value)}
+                  placeholder="Nomor induk"
+                />
               </label>
               <label>
                 Tahun lulus
-                <select>
-                  <option>2024</option>
-                  <option>2023</option>
-                  <option>2022</option>
-                </select>
+                <input
+                  required
+                  type="number"
+                  value={tahunLulus}
+                  onChange={(e) => setTahunLulus(e.target.value)}
+                  placeholder="2024"
+                />
               </label>
             </div>
             <label>
+              Email (untuk akun login alumni)
+              <input
+                required
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="alumni@uhn.ac.id"
+              />
+            </label>
+            <label>
               Program studi
-              <select>
-                <option>Informatika</option>
-                <option>Sistem Informasi</option>
-                <option>Teknologi Informasi</option>
+              <select
+                required
+                value={prodiId}
+                onChange={(e) => setProdiId(e.target.value)}
+              >
+                {prodiList.length === 0 ? (
+                  <option value="">Memuat program studi...</option>
+                ) : (
+                  prodiList.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.nama_prodi}
+                    </option>
+                  ))
+                )}
               </select>
             </label>
             <label>
               Foto alumni
-              <input type="file" accept="image/*" />
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/jpg"
+                onChange={(e) => setFotoProfil(e.target.files?.[0] || null)}
+              />
             </label>
           </>
         ) : type === "question" ? (
@@ -261,11 +406,13 @@ export function Modal({
             Batal
           </Button>
           <Button type="submit">
-            {type === "import"
-              ? "Import Excel"
-              : isEdit
-                ? "Simpan Perubahan"
-                : "Simpan Data"}
+            {submitting
+              ? "Menyimpan..."
+              : type === "import"
+                ? "Import Excel"
+                : isEdit
+                  ? "Simpan Perubahan"
+                  : "Simpan Data"}
           </Button>
         </div>
       </form>

@@ -23,6 +23,7 @@ export default function App() {
   const [detail, setDetail] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [modal, setModal] = useState<null | ModalData>(null);
+  const [alumniRefreshKey, setAlumniRefreshKey] = useState(0);
   const [toast, setToast] = useState("");
 
   const notify = (message: string) => {
@@ -79,14 +80,24 @@ export default function App() {
             <AlumniView
               notify={notify}
               role={role}
+              refreshKey={alumniRefreshKey}
               openModal={() =>
-                setModal({ title: "Tambah Alumni", type: "alumni" })
+                setModal({
+                  title: "Tambah Alumni",
+                  type: "alumni",
+                  onSuccess: () => setAlumniRefreshKey((k) => k + 1),
+                })
               }
               openImport={() =>
                 setModal({ title: "Import Data Alumni", type: "import" })
               }
-              openEdit={(name) =>
-                setModal({ title: `Edit Alumni — ${name}`, type: "alumni" })
+              openEdit={(item) =>
+                setModal({
+                  title: `Edit Alumni — ${item.nama_lengkap}`,
+                  type: "alumni",
+                  alumni: item,
+                  onSuccess: () => setAlumniRefreshKey((k) => k + 1),
+                })
               }
             />
           )}

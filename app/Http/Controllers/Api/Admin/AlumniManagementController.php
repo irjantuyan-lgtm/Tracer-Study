@@ -18,18 +18,6 @@ use Illuminate\Support\Facades\Auth;
 
 class AlumniManagementController extends Controller
 {
-    public function index()
-    {
-        $query = Alumni::with('programStudi');
-        $user = Auth::user();
-
-        if ($user && $user->role && $user->role->nama_role === 'Admin Prodi') {
-            $query->where('prodi_id', $user->prodi_id);
-        }
-
-        return response()->json(['status' => 'success', 'data' => $query->get()], 200);
-    }
-
   public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
