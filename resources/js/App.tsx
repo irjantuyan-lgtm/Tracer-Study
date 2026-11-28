@@ -60,6 +60,7 @@ export default function App() {
         close={() => setMobileOpen(false)}
         role={role}
         logout={() => {
+          localStorage.removeItem("token");
           setLoggedIn(false);
           setPage("dashboard");
           setDetail(false);
