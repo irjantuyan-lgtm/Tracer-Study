@@ -10,6 +10,7 @@ export interface HeaderProps {
   subtitle?: string;
   breadcrumbs?: { label: string; onClick?: () => void }[];
   actions?: React.ReactNode;
+  onSwitchToAlumni?: () => void;
 }
 
 export function Header({
@@ -19,6 +20,7 @@ export function Header({
   subtitle,
   breadcrumbs,
   actions,
+  onSwitchToAlumni,
 }: HeaderProps) {
   // Jika dipanggil dari DetailView / HomeView (dengan breadcrumbs / subtitle / actions)
   if (breadcrumbs || subtitle || actions) {
@@ -75,6 +77,17 @@ export function Header({
         </div>
       </div>
       <div className="profile-area">
+        {onSwitchToAlumni && (
+          <button
+            type="button"
+            className="btn btn-secondary"
+            style={{ fontSize: "10px", padding: "6px 12px", minHeight: "32px" }}
+            onClick={onSwitchToAlumni}
+            title="Buka tampilan Portal Alumni"
+          >
+            Portal Alumni
+          </button>
+        )}
         <button className="notification">
           <Icon name="bell" />
           <span />

@@ -22,6 +22,12 @@ export const roles: Record<Role, RoleInfo> = {
     scope: "Program Studi Informatika",
     greeting: "Admin Prodi",
   },
+  alumni: {
+    label: "Alumni",
+    short: "AL",
+    scope: "Portal Alumni Mahasiswa",
+    greeting: "Alumni Mahasiswa",
+  },
 };
 
 export const nav: NavItem[] = [

@@ -1,7 +1,17 @@
 import { ReactNode } from "react";
 import { IconName } from "../../types";
 
-export function Icon({ name, size = 19 }: { name: IconName; size?: number }) {
+export function Icon({
+  name,
+  size = 19,
+  className = "",
+  style,
+}: {
+  name: IconName;
+  size?: number;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
   const paths: Record<IconName, ReactNode> = {
     home: (
       <>
@@ -110,7 +120,7 @@ export function Icon({ name, size = 19 }: { name: IconName; size?: number }) {
 
   return (
     <svg
-      className="icon"
+      className={`icon ${className}`}
       width={size}
       height={size}
       viewBox="0 0 24 24"
@@ -120,6 +130,12 @@ export function Icon({ name, size = 19 }: { name: IconName; size?: number }) {
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
+      style={{
+        display: "inline-block",
+        verticalAlign: "middle",
+        flexShrink: 0,
+        ...style,
+      }}
     >
       {paths[name]}
     </svg>

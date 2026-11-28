@@ -3,6 +3,7 @@ import { Page, Role, ModalData } from "./types";
 import { nav } from "./data";
 import { Icon, Modal } from "./components/common";
 import { Sidebar, Header } from "./components/layout";
+import { AlumniApp } from "./alumni";
 import {
   LoginView,
   DashboardView,
@@ -17,8 +18,16 @@ import {
 } from "./views";
 
 export default function App() {
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [role, setRole] = useState<Role>("super");
+  const isAlumniUrl =
+    typeof window !== "undefined" &&
+    (window.location.pathname.startsWith("/alumni") ||
+      new URLSearchParams(window.location.search).get("portal") === "alumni");
+
+  const [portal, setPortal] = useState<"admin" | "alumni">(() =>
+    isAlumniUrl ? "alumni" : "admin"
+  );
+  const [loggedIn, setLoggedIn] = useState(isAlumniUrl);
+  const [role, setRole] = useState<Role>(isAlumniUrl ? "alumni" : "super");
   const [page, setPage] = useState<Page>("dashboard");
   const [detail, setDetail] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -36,12 +45,33 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // Jika sedang membuka portal alumni
+  if (portal === "alumni") {
+    return (
+      <AlumniApp
+        initialLoggedIn={loggedIn && role === "alumni"}
+        onLogout={() => {
+          setLoggedIn(false);
+          setPortal("admin");
+          setRole("super");
+        }}
+      />
+    );
+  }
+
   if (!loggedIn) {
     return (
       <LoginView
         onLogin={(selectedRole) => {
-          setRole(selectedRole);
-          setLoggedIn(true);
+          if (selectedRole === "alumni") {
+            setRole("alumni");
+            setPortal("alumni");
+            setLoggedIn(true);
+          } else {
+            setRole(selectedRole);
+            setPortal("admin");
+            setLoggedIn(true);
+          }
         }}
       />
     );
@@ -68,7 +98,12 @@ export default function App() {
         }}
       />
       <div className="app-main">
-        <Header title={title} menu={() => setMobileOpen(true)} role={role} />
+        <Header
+          title={title}
+          menu={() => setMobileOpen(true)}
+          role={role}
+          onSwitchToAlumni={() => setPortal("alumni")}
+        />
         <main className="content">
           {page === "dashboard" && (
             <DashboardView navigate={changePage} role={role} />

@@ -6,15 +6,12 @@ import { Brand, Button, Icon } from "../components/common";
 export function LoginView({ onLogin }: { onLogin: (role: Role) => void }) {
   const [show, setShow] = useState(false);
   const [role, setRole] = useState<Role>("super");
+  const [username, setUsername] = useState("superadmin");
+  const [password, setPassword] = useState("admin123");
+
   const submit = (event: FormEvent) => {
-    const [loginId, setLoginId] = useState("superadmin");
-    const [password, setPassword] = useState("admin123");
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
     event.preventDefault();
     onLogin(role);
-
-
   };
 
   return (
