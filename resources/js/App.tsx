@@ -103,7 +103,6 @@ export default function App() {
           title={title}
           menu={() => setMobileOpen(true)}
           role={role}
-          onSwitchToAlumni={() => setPortal("alumni")}
         />
         <main className="content">
           {page === "dashboard" && (
