@@ -10,7 +10,7 @@ export type Page =
   | "logs"
   | "settings";
 
-export type Role = "super" | "faculty" | "program";
+export type Role = "super" | "faculty" | "program" | "alumni";
 
 export type IconName =
   | "home"

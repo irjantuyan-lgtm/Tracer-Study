@@ -15,6 +15,11 @@ export function LoginView({ onLogin }: { onLogin: (role: Role) => void }) {
   const submit = async (event: FormEvent) => {
     event.preventDefault();
 
+    if (role === "alumni") {
+      onLogin("alumni");
+      return;
+    }
+
     try {
       setLoading(true);
       setError("");
@@ -62,9 +67,6 @@ export function LoginView({ onLogin }: { onLogin: (role: Role) => void }) {
                 pendidikan yang lebih baik.
               </p>
             </div>
-            <p className="photo-credit">
-              Foto kampus oleh Julianto Saputra / Unsplash
-            </p>
           </div>
         </div>
 
@@ -158,6 +160,5 @@ export function LoginView({ onLogin }: { onLogin: (role: Role) => void }) {
         </div>
       </section>
     </main>
-
   );
 }

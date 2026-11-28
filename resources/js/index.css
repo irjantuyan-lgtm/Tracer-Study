@@ -78,10 +78,10 @@ input::placeholder, textarea::placeholder { color: #a6adb3; }
 .form-options { display: flex; justify-content: space-between; align-items: center; margin: -2px 0 25px; }
 .role-picker { border: 0; padding: 0; margin: -4px 0 20px; }
 .role-picker legend { color: var(--ink-700); font-size: 11px; font-weight: 700; margin-bottom: 9px; }
-.role-picker > div { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
-.role-picker button { border: 1px solid var(--line); background: white; color: var(--ink-500); border-radius: 9px; padding: 8px 5px; display: grid; justify-items: center; gap: 3px; }
+.role-picker > div { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.role-picker button { border: 1px solid var(--line); background: white; color: var(--ink-500); border-radius: 9px; padding: 8px 3px; display: grid; justify-items: center; gap: 3px; min-width: 0; }
 .role-picker button b { width: 27px; height: 27px; display: grid; place-items: center; border-radius: 8px; background: #f4f2f0; color: var(--ink-700); font-size: 8px; }
-.role-picker button span { font-size: 7px; font-weight: 700; white-space: nowrap; }
+.role-picker button span { font-size: 7.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .role-picker button.active { border-color: var(--brand-500); color: var(--brand-700); background: var(--brand-50); box-shadow: 0 0 0 2px var(--brand-100); }
 .role-picker button.active b { color: white; background: var(--brand-600); }
 .check-label { display: flex !important; grid-template-columns: auto 1fr; align-items: center; gap: 8px !important; margin: 0 !important; font-weight: 500 !important; }
